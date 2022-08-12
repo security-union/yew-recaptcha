@@ -1,0 +1,1 @@
+/Users/darioalessandro/Desktop/yew-recaptcha-v3/examples/recaptcha-basic/target/wasm32-unknown-unknown/debug/recaptcha-basic.wasm: /Users/darioalessandro/Desktop/yew-recaptcha-v3/examples/recaptcha-basic/src/main.rs /Users/darioalessandro/Desktop/yew-recaptcha-v3/src/lib.rs /Users/darioalessandro/Desktop/yew-recaptcha-v3/src/recaptcha/mod.rs
