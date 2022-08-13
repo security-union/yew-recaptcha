@@ -7,6 +7,5 @@ edition = "2021"
 
 [dependencies]
 yew = "0.19.3"
-wasm-bindgen = { version="0.2.82", features = ["serde-serialize"] }
 yew-recaptcha-v3 = { path = "../../"}
 gloo-console = "0.2.1"
