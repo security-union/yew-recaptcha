@@ -464,6 +464,7 @@ dependencies = [
  "anyhow",
  "gloo-console",
  "gloo-utils",
+ "js-sys",
  "wasm-bindgen",
  "web-sys",
  "yew",
