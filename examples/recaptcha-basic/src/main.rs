@@ -10,7 +10,7 @@ fn app_component() -> Html {
     let on_click = Callback::from(move |_| {
         log!("click");
         let on_execute_copy = on_execute.clone();
-        on_execute.set(Some(Callback::from( move |w: String| {
+        on_execute.set(Some(Callback::from(move |w: String| {
             log!("on execute");
             on_execute_copy.set(None);
             ()
@@ -24,7 +24,7 @@ fn app_component() -> Html {
                 { "Click me!" }
             </button>
             <Recaptcha
-            site_key="6LeH_x8UAAAAAKKuaaod4GsENkTJTHdeQIm8l6y2"
+            site_key="6LddvmMhAAAAAKeASefVl3YcOuM-sptuZ2Hmr0n1"
             on_execute={on_execute_value}
             ref={recaptcha_ref}/>
         </>
