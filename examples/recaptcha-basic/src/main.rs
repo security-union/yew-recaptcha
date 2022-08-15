@@ -4,16 +4,14 @@ use yew_recaptcha_v3::recaptcha::Recaptcha;
 
 #[function_component(App)]
 fn app_component() -> Html {
-    let recaptcha_ref = NodeRef::default();
     let on_execute = Box::new(use_state(|| None));
     let on_execute_copy = on_execute.clone();
     let on_click = Callback::from(move |_| {
-        log!("click");
-        let on_execute_copy = on_execute.clone();
-        on_execute.set(Some(Callback::from(move |w: String| {
-            log!("on execute");
-            on_execute_copy.set(None);
-            ()
+        log!("Button clicked");
+        // Per https://yew.rs/docs/next/concepts/function-components/communication
+        // We need to create a new callback everytime that we want Recaptcha to be executed.
+        on_execute.set(Some(Callback::from(|token| {
+            log!("on_execute_callback {}", token);
         })));
         ()
     });
@@ -26,7 +24,7 @@ fn app_component() -> Html {
             <Recaptcha
             site_key="6LddvmMhAAAAAKeASefVl3YcOuM-sptuZ2Hmr0n1"
             on_execute={on_execute_value}
-            ref={recaptcha_ref}/>
+        />
         </>
     }
 }

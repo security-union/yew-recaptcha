@@ -247,6 +247,7 @@ name = "recaptcha-basic"
 version = "0.1.0"
 dependencies = [
  "gloo-console",
+ "wasm-bindgen",
  "yew",
  "yew-recaptcha-v3",
 ]

@@ -9,3 +9,4 @@ edition = "2021"
 yew = "0.19.3"
 yew-recaptcha-v3 = { path = "../../"}
 gloo-console = "0.2.1"
+wasm-bindgen = "0.2.82"

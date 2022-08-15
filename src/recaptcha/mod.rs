@@ -1,6 +1,6 @@
-use gloo_console::log;
+use gloo_console::{error, log};
 use gloo_utils::{document, window};
-use js_sys::{Array, Function, Object, Reflect};
+use js_sys::{Function, Reflect};
 use serde::Serialize;
 use wasm_bindgen::{prelude::*, JsCast};
 use web_sys::AddEventListenerOptions;
@@ -17,25 +17,27 @@ pub struct RecaptchaProps {
     pub on_execute: Option<Callback<String>>,
 }
 
+const GRECAPTCHA_DOM_ID: &str = "grecaptcha";
+const GRECAPTCHA_URL: &str = "https://www.google.com/recaptcha/api.js";
+const GRECAPTCHA_ON_LOAD: &str = "GoogleRecaptchaLoaded";
+
 // Docs: https://developers.google.com/recaptcha/docs/v3
 #[function_component(Recaptcha)]
 pub fn recaptcha_component(props: &RecaptchaProps) -> Html {
-    log!("cause child re-render");
     let site_key = props.site_key.clone();
     use_effect_with_deps(
         move |_| {
-            log!("configuring dom");
-            inject_script(site_key.clone());
+            if let Err(e) = inject_script(site_key.clone()) {
+                error!(e);
+            }
             || ()
         },
         (), // dependents
     );
     if let Some(callback) = &props.on_execute {
-        log!("calling callback");
-        execute(props.site_key.clone());
-        callback.emit("balls".to_string());
-    } else {
-        log!("no callback");
+        if let Err(e) = execute(props.site_key.clone()) {
+            error!(e);
+        }
     }
     html! {
         <>
@@ -45,7 +47,7 @@ pub fn recaptcha_component(props: &RecaptchaProps) -> Html {
 
 fn execute(site_key: String) -> Result<(), JsValue> {
     let grecaptcha = window()
-        .get("grecaptcha")
+        .get(GRECAPTCHA_DOM_ID)
         .ok_or(JsValue::from_str("Can't find grecaptcha"))?;
     let grecaptcha: &wasm_bindgen::JsValue = &grecaptcha.into();
     let on_ready = Reflect::get(grecaptcha, &JsValue::from_str("ready"))?;
@@ -53,6 +55,7 @@ fn execute(site_key: String) -> Result<(), JsValue> {
     let execute = Reflect::get(grecaptcha, &JsValue::from_str("execute"))?;
     let execute: Function = execute.into();
     let on_execute_callback = Closure::wrap(Box::new(move |token| {
+        // callback.emit(token);
         log!("on_execute_callback {}", token);
     }) as Box<dyn FnMut(JsValue)>);
     let on_ready_callback = Closure::wrap(Box::new(move |_| {
@@ -62,11 +65,7 @@ fn execute(site_key: String) -> Result<(), JsValue> {
         })
         .unwrap();
         let future: js_sys::Promise = execute
-            .call2(
-                &JsValue::null(),
-                &JsValue::from_str(&site_key),
-                &action,
-            )
+            .call2(&JsValue::null(), &JsValue::from_str(&site_key), &action)
             .unwrap()
             .into();
         future.then(&on_execute_callback);
@@ -90,7 +89,7 @@ fn inject_script(site_key: String) -> Result<(), JsValue> {
     google_loaded.forget();
     let script = document().create_element("script").unwrap();
     script.set_attribute("async", "true")?;
-    script.set_id("recaptcha");
+    script.set_id(GRECAPTCHA_DOM_ID);
     let listener = Closure::wrap(Box::new(|_| {}) as Box<dyn FnMut(JsValue)>);
     let options = AddEventListenerOptions::new();
     script.add_event_listener_with_callback_and_add_event_listener_options(
@@ -98,15 +97,13 @@ fn inject_script(site_key: String) -> Result<(), JsValue> {
         listener.as_ref().unchecked_ref(),
         &options,
     )?;
-    let site_url = format!("https://www.google.com/recaptcha/api.js?onload=GoogleRecaptchaLoaded&render={}", site_key);
-    script.set_attribute(
-        "src",
-        &site_url,
-    )?;
+    let site_url = format!(
+        "{}?onload={}&render={}",
+        GRECAPTCHA_URL, GRECAPTCHA_ON_LOAD, site_key
+    );
+    script.set_attribute("src", &site_url)?;
 
     script.set_attribute("type", "text/javascript")?;
-
-    // nonce && script.setAttribute("nonce", nonce);
     let body = document()
         .body()
         .ok_or(JsValue::from_str("Can't find body"))?;
