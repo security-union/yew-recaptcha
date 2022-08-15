@@ -1,6 +1,6 @@
 use gloo_console::{error, log};
 use gloo_utils::{document, window};
-use js_sys::{Function, Reflect};
+use js_sys::{Function, JsString, Reflect};
 use serde::Serialize;
 use wasm_bindgen::{prelude::*, JsCast};
 use web_sys::AddEventListenerOptions;
@@ -32,12 +32,16 @@ pub fn recaptcha_component(props: &RecaptchaProps) -> Html {
             }
             || ()
         },
-        (), // dependents
+        (),
     );
-    if let Some(callback) = &props.on_execute {
-        if let Err(e) = execute(props.site_key.clone()) {
-            error!(e);
-        }
+    if let Some(callback) = props.on_execute.clone() {
+        let callback = Box::new(callback);
+        let future = execute(props.site_key.clone(), callback);
+        wasm_bindgen_futures::spawn_local(async move {
+            if let Err(e) = future.await {
+                error!(e);
+            }
+        });
     }
     html! {
         <>
@@ -45,34 +49,26 @@ pub fn recaptcha_component(props: &RecaptchaProps) -> Html {
     }
 }
 
-fn execute(site_key: String) -> Result<(), JsValue> {
+async fn execute(site_key: String, callback: Box<Callback<String>>) -> Result<(), JsValue> {
     let grecaptcha = window()
         .get(GRECAPTCHA_DOM_ID)
         .ok_or(JsValue::from_str("Can't find grecaptcha"))?;
     let grecaptcha: &wasm_bindgen::JsValue = &grecaptcha.into();
-    let on_ready = Reflect::get(grecaptcha, &JsValue::from_str("ready"))?;
-    let on_ready: Function = on_ready.into();
     let execute = Reflect::get(grecaptcha, &JsValue::from_str("execute"))?;
     let execute: Function = execute.into();
-    let on_execute_callback = Closure::wrap(Box::new(move |token| {
-        // callback.emit(token);
-        log!("on_execute_callback {}", token);
-    }) as Box<dyn FnMut(JsValue)>);
-    let on_ready_callback = Closure::wrap(Box::new(move |_| {
-        log!("on_ready");
-        let action = &JsValue::from_serde(&RecaptchaAction {
-            action: "submit".to_string(),
-        })
-        .unwrap();
-        let future: js_sys::Promise = execute
-            .call2(&JsValue::null(), &JsValue::from_str(&site_key), &action)
-            .unwrap()
-            .into();
-        future.then(&on_execute_callback);
-    }) as Box<dyn FnMut(JsValue)>);
-
-    on_ready.call1(&JsValue::null(), &on_ready_callback.into_js_value())?;
-
+    let action = &JsValue::from_serde(&RecaptchaAction {
+        action: "submit".to_string(),
+    })
+    .unwrap();
+    let future: js_sys::Promise = execute
+        .call2(&JsValue::null(), &JsValue::from_str(&site_key), &action)
+        .unwrap()
+        .into();
+    let result = wasm_bindgen_futures::JsFuture::from(future).await?;
+    let token = JsString::from(result)
+        .as_string()
+        .ok_or(JsValue::from_str("Can't parse recaptcha token"))?;
+    callback.emit(token);
     Ok(())
 }
 
