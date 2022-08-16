@@ -1,5 +1,6 @@
+![google-reCAPTCHA](https://user-images.githubusercontent.com/1176339/184780286-856b249d-01e6-498f-a9af-8486dedbdc16.svg)
 
-# Yew-recaptcha-v3
+# YEW-reCAPTCHA-v3
 
 reCAPTCHA v3 returns a score for each request without user friction. The score is based on interactions with your site and enables you to take an appropriate action for your site. Register reCAPTCHA v3 keys on the [reCAPTCHA Admin console](https://www.google.com/recaptcha/admin/create). 
 
