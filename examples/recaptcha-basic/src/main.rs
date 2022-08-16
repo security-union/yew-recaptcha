@@ -2,6 +2,8 @@ use gloo_console::log;
 use yew::prelude::*;
 use yew_recaptcha_v3::recaptcha::Recaptcha;
 
+const RECAPTCHA_SITE_KEY: &str = std::env!("RECAPTCHA_SITE_KEY");
+
 #[function_component(App)]
 fn app_component() -> Html {
     let on_execute = Box::new(use_state(|| None));
@@ -30,7 +32,7 @@ fn app_component() -> Html {
                 { "Click me!" }
             </button>
             <Recaptcha
-            site_key="6LddvmMhAAAAAKeASefVl3YcOuM-sptuZ2Hmr0n1"
+            site_key={RECAPTCHA_SITE_KEY}
             on_execute={&**on_execute}
             />
             <p>{print_last_token}</p>
