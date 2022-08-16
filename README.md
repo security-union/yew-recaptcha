@@ -8,6 +8,7 @@
 # YEW-reCAPTCHA-v3
 
 [![crates.io](https://img.shields.io/crates/v/yew-recaptcha-v3.svg)](https://crates.io/crates/yew-recaptcha-v3)
+[![docs.rs](https://docs.rs/yew-recaptcha-v3/badge.svg)](https://docs.rs/yew-recaptcha-v3)
 
 
 ## TLDR
