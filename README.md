@@ -7,6 +7,9 @@
 
 # YEW-reCAPTCHA-v3
 
+[![crates.io](https://img.shields.io/crates/v/yew-recaptcha-v3.svg)](https://crates.io/crates/yew-recaptcha-v3)
+
+
 ## TLDR
 
 reCAPTCHA v3 returns a score for each request without user friction. The score is based on interactions with your site and enables you to take an appropriate action for your site. Register reCAPTCHA v3 keys on the [reCAPTCHA Admin console](https://www.google.com/recaptcha/admin/create). 
