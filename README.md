@@ -111,9 +111,3 @@ Sample response:
 
 reCAPTCHA v3 returns a score (1.0 is very likely a good interaction, 0.0 is very likely a bot). Based on the score, you can take variable action in the context of your site. Every site is different, but below are some examples of how sites use the score. As in the examples below, take action behind the scenes instead of blocking traffic to better protect your site.
 
-## Analytics
-
-
-```
-curl -d -X -POST --header "Content-type:application/x-www-form-urlencoded" "https://www.google.com/recaptcha/api/siteverify?secret=6Ldlq3whAAAAAADSEMgRw9fNBxKn_4CJPhVwjcNq&response=03ANYolqtHdx-sKT04n7PWTVVzusYybZCNGM2evf1tkupAs5lPK6wIw2W6OjoEfSOfBoGK8dOiCp7IXvZwp3cnVXP6bAQzRko0Jt37KWzKdTRX5bosGvW9ahVRMG5sVRKJUhiER8JoWLmOZexG6ctpBM0AhC0gdwLj4V1_F47N_pEVXVergWjLYJ5Wmz7P1V8FutqY4FpSLZ_Q-KPDo030_OuvL_0We5_qTqcV7sFIW8xbVvESTRwKgJrO4z8ZPWo1I0ytX0mkXH0mpySQNYlmq7uJzVA1YX6mM_FDZs9zyzZQuSiTMnZJ9ZyruONuxXAoXvgKuuqqse4VVfw1lyUJx0uRUpVR8JGQSMsacOV2wXyDk7OGhvHVKPd1zpXZiqBAWMVHU21JJcBgAYcgtPVpaUN-Ci9z2Hbi3Uld6mwiX_aCbRYwnjqptb-VRPfyh-JkEORq_bns8XUccNWKcyRVxNkm8ppoNnx9TCboLYH0d2KB3w7QctKwCIVXKp85YwBXHCUAvEUjz91r"    
-```
