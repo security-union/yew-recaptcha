@@ -5,6 +5,7 @@ use serde::Serialize;
 use wasm_bindgen::{prelude::*, JsCast};
 use web_sys::AddEventListenerOptions;
 use yew::prelude::*;
+use serde_wasm_bindgen::to_value;
 
 #[derive(Serialize)]
 pub struct RecaptchaAction {
@@ -56,7 +57,7 @@ async fn execute(site_key: String, callback: Box<Callback<String>>) -> Result<()
     let grecaptcha: &wasm_bindgen::JsValue = &grecaptcha.into();
     let execute = Reflect::get(grecaptcha, &JsValue::from_str("execute"))?;
     let execute: Function = execute.into();
-    let action = &JsValue::from_serde(&RecaptchaAction {
+    let action = &to_value(&RecaptchaAction {
         action: "submit".to_string(),
     })
     .unwrap();
