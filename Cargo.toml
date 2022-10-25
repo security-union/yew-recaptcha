@@ -1,9 +1,10 @@
 [package]
 name = "yew-recaptcha-v3"
-version = "0.1.4"
+version = "0.1.5"
 edition = "2021"
 repository = "git@github.com:security-union/yew-recaptcha.git"
-
+description = "reCAPTCHA is a free service from Google that helps protect websites from spam and abuse"
+license = "MIT"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
