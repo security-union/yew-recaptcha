@@ -1,6 +1,6 @@
 use gloo_console::log;
 use yew::prelude::*;
-use yew_recaptcha_v3::recaptcha::Recaptcha;
+use yew_recaptcha_v3::recaptcha::use_recaptcha;
 
 const RECAPTCHA_SITE_KEY: &str = std::env!("RECAPTCHA_SITE_KEY");
 
@@ -26,15 +26,12 @@ fn app_component() -> Html {
         Some(token) => format!("reCAPTCHA token: {}", token),
         None => "Press the button to get a token, look at the console logs in case that there's an error".to_string()
     };
+    use_recaptcha(RECAPTCHA_SITE_KEY.to_string(), &**on_execute);
     html! {
         <>
             <button onclick={on_click}>
                 { "Click me!" }
             </button>
-            <Recaptcha
-            site_key={RECAPTCHA_SITE_KEY}
-            on_execute={&**on_execute}
-            />
             <p>{print_last_token}</p>
             <p>{"Remember that you need to send this token along with the form values so that \n
                    your server can call the Recaptcha API."}</p>

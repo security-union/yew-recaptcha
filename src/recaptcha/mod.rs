@@ -23,32 +23,28 @@ const GRECAPTCHA_URL: &str = "https://www.google.com/recaptcha/api.js";
 const GRECAPTCHA_ON_LOAD: &str = "GoogleRecaptchaLoaded";
 
 // Docs: https://developers.google.com/recaptcha/docs/v3
-#[function_component(Recaptcha)]
-pub fn recaptcha_component(props: &RecaptchaProps) -> Html {
-    let site_key = props.site_key.clone();
+pub fn use_recaptcha(site_key: String, on_execute: &Option<Callback<String>>) -> () {
+    let key_clone = site_key.clone();
     use_effect_with_deps(
         move |_| {
-            if let Err(e) = inject_script(site_key.clone()) {
+            if let Err(e) = inject_script(key_clone) {
                 error!(e);
             }
             || ()
         },
         (),
     );
-    if let Some(callback) = props.on_execute.clone() {
+    if let Some(callback) = on_execute.clone() {
         let callback = Box::new(callback);
-        let future = execute(props.site_key.clone(), callback);
+        let future = execute(site_key, callback);
         wasm_bindgen_futures::spawn_local(async move {
             if let Err(e) = future.await {
                 error!(e);
             }
         });
     }
-    html! {
-        <>
-        </>
-    }
 }
+
 
 async fn execute(site_key: String, callback: Box<Callback<String>>) -> Result<(), JsValue> {
     let grecaptcha = window()

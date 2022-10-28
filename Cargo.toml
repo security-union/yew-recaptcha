@@ -1,6 +1,6 @@
 [package]
 name = "yew-recaptcha-v3"
-version = "0.1.6"
+version = "0.2.0"
 edition = "2021"
 repository = "https://github.com/security-union/yew-recaptcha.git"
 description = "reCAPTCHA is a free service from Google that helps protect websites from spam and abuse"
