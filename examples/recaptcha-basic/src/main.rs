@@ -8,11 +8,15 @@ const RECAPTCHA_SITE_KEY: &str = std::env!("RECAPTCHA_SITE_KEY");
 fn app_component() -> Html {
     let on_execute = Box::new(use_state(|| None));
     let last_token = Box::new(use_state(|| None));
+    let clicks = use_state(|| 0);
+    let clicks_clone = clicks.clone();
+    let executes = use_state(|| 0);
     let on_click = {
         let on_execute = on_execute.clone();
         let last_token = last_token.clone();
         Callback::from(move |_| {
-            log!("Button clicked");
+            log!("Button clicked ", *clicks_clone);
+            clicks_clone.set(*clicks_clone + 1);
             // Per https://yew.rs/docs/next/concepts/function-components/communication
             // We need to create a new callback everytime that we want Recaptcha to be executed.
             let last_token = last_token.clone();
@@ -26,7 +30,10 @@ fn app_component() -> Html {
         Some(token) => format!("reCAPTCHA token: {}", token),
         None => "Press the button to get a token, look at the console logs in case that there's an error".to_string()
     };
-    use_recaptcha(RECAPTCHA_SITE_KEY.to_string(), &**on_execute);
+    if *executes < *clicks {
+        use_recaptcha(RECAPTCHA_SITE_KEY.to_string(), &**on_execute);
+        executes.set(*clicks);
+    }
     html! {
         <>
             <button onclick={on_click}>
