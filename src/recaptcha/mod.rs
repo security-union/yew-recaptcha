@@ -2,10 +2,10 @@ use gloo_console::{error, log};
 use gloo_utils::{document, window};
 use js_sys::{Function, JsString, Reflect};
 use serde::Serialize;
+use serde_wasm_bindgen::to_value;
 use wasm_bindgen::{prelude::*, JsCast};
 use web_sys::AddEventListenerOptions;
 use yew::prelude::*;
-use serde_wasm_bindgen::to_value;
 
 #[derive(Serialize)]
 pub struct RecaptchaAction {
@@ -23,34 +23,48 @@ const GRECAPTCHA_URL: &str = "https://www.google.com/recaptcha/api.js";
 const GRECAPTCHA_ON_LOAD: &str = "GoogleRecaptchaLoaded";
 
 // Docs: https://developers.google.com/recaptcha/docs/v3
-#[function_component(Recaptcha)]
-pub fn recaptcha_component(props: &RecaptchaProps) -> Html {
-    let site_key = props.site_key.clone();
+pub fn use_recaptcha(
+    site_key: String,
+    on_execute: Box<UseStateHandle<Option<Callback<String>>>>,
+) -> () {
+    let key_clone = site_key.clone();
     use_effect_with_deps(
         move |_| {
-            if let Err(e) = inject_script(site_key.clone()) {
+            if let Err(e) = inject_script(key_clone) {
                 error!(e);
             }
             || ()
         },
         (),
     );
-    if let Some(callback) = props.on_execute.clone() {
-        let callback = Box::new(callback);
-        let future = execute(props.site_key.clone(), callback);
-        wasm_bindgen_futures::spawn_local(async move {
-            if let Err(e) = future.await {
-                error!(e);
+
+    // Only recompute if the on_execute callback is recomputed.
+    let on_execute_clone = on_execute.clone();
+    use_effect_with_deps(
+        move |_| {
+            if let Some(_callback) = &**on_execute.clone() {
+                let future = execute(site_key, on_execute.clone());
+                wasm_bindgen_futures::spawn_local(async move {
+                    if let Err(e) = future.await {
+                        error!(e);
+                    }
+                });
             }
-        });
-    }
-    html! {
-        <>
-        </>
-    }
+
+            || ()
+        },
+        *on_execute_clone,
+    );
 }
 
-async fn execute(site_key: String, callback: Box<Callback<String>>) -> Result<(), JsValue> {
+async fn execute(
+    site_key: String,
+    callback: Box<UseStateHandle<Option<Callback<String>>>>,
+) -> Result<(), JsValue> {
+    let callback = match &**callback {
+        Some(callback) => callback,
+        None => return Err(JsValue::from_str("No callback")),
+    };
     let grecaptcha = window()
         .get(GRECAPTCHA_DOM_ID)
         .ok_or(JsValue::from_str("Can't find grecaptcha"))?;
