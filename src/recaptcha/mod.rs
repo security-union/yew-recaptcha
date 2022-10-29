@@ -23,7 +23,10 @@ const GRECAPTCHA_URL: &str = "https://www.google.com/recaptcha/api.js";
 const GRECAPTCHA_ON_LOAD: &str = "GoogleRecaptchaLoaded";
 
 // Docs: https://developers.google.com/recaptcha/docs/v3
-pub fn use_recaptcha(site_key: String, on_execute: Box<UseStateHandle<Callback<String>>>) -> () {
+pub fn use_recaptcha(
+    site_key: String,
+    on_execute: Box<UseStateHandle<Option<Callback<String>>>>,
+) -> () {
     let key_clone = site_key.clone();
     use_effect_with_deps(
         move |_| {
@@ -39,12 +42,14 @@ pub fn use_recaptcha(site_key: String, on_execute: Box<UseStateHandle<Callback<S
     let on_execute_clone = on_execute.clone();
     use_effect_with_deps(
         move |_| {
-            let future = execute(site_key, on_execute.clone());
-            wasm_bindgen_futures::spawn_local(async move {
-                if let Err(e) = future.await {
-                    error!(e);
-                }
-            });
+            if let Some(_callback) = &**on_execute.clone() {
+                let future = execute(site_key, on_execute.clone());
+                wasm_bindgen_futures::spawn_local(async move {
+                    if let Err(e) = future.await {
+                        error!(e);
+                    }
+                });
+            }
 
             || ()
         },
@@ -54,8 +59,12 @@ pub fn use_recaptcha(site_key: String, on_execute: Box<UseStateHandle<Callback<S
 
 async fn execute(
     site_key: String,
-    callback: Box<UseStateHandle<Callback<String>>>,
+    callback: Box<UseStateHandle<Option<Callback<String>>>>,
 ) -> Result<(), JsValue> {
+    let callback = match &**callback {
+        Some(callback) => callback,
+        None => return Err(JsValue::from_str("No callback")),
+    };
     let grecaptcha = window()
         .get(GRECAPTCHA_DOM_ID)
         .ok_or(JsValue::from_str("Can't find grecaptcha"))?;

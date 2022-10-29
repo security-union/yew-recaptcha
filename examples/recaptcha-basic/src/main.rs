@@ -7,21 +7,32 @@ const RECAPTCHA_SITE_KEY: &str = std::env!("RECAPTCHA_SITE_KEY");
 #[function_component(App)]
 fn app_component() -> Html {
     let last_token = Box::new(use_state(|| None));
-    let on_execute = Box::new(use_state(|| Callback::from(move |_| ())));
+    let on_execute = Box::new(use_state(|| None));
     let on_click = {
         let on_execute = on_execute.clone();
         let last_token = last_token.clone();
         Callback::from(move |_| {
             log!("Button clicked");
             let last_token = last_token.clone();
-            on_execute.set(Callback::from(move |token| {
+            
+            // setting the on_execute callback will force recaptcha to be recalculated.
+            on_execute.set(Some(Callback::from(move |token| {
                 last_token.set(Some(token));
-            }));
+            })));
             ()
         })
     };
+    let counter = use_state(|| 0);
+    let on_counter_click = {
+        let counter = counter.clone();
+        move |_| {
+            let value = *counter + 1;
+            counter.set(value);
+        }
+    };
 
-    use_recaptcha(RECAPTCHA_SITE_KEY.to_string(), on_execute.clone());
+    // Recaptcha will be called only when on_execute changes.
+    use_recaptcha(RECAPTCHA_SITE_KEY.to_string(), on_execute);
 
     let print_last_token = match &(**last_token) {
         Some(token) => format!("reCAPTCHA token: {}", token),
@@ -30,7 +41,7 @@ fn app_component() -> Html {
     html! {
         <>
             <button onclick={on_click}>
-                { "Click me!" }
+                { "Click me to call recaptcha!" }
             </button>
             <p>{print_last_token}</p>
             <p>{"Remember that you need to send this token along with the form values so that \n
@@ -43,6 +54,11 @@ fn app_component() -> Html {
                 }
             </p>
             <a href="https://developers.google.com/recaptcha/docs/v3">{"Google Documentation"}</a>
+            <p>{"This counter is just to test that clicking this button does not cause recaptcha \n
+                to be called"
+            }</p>
+            <button onclick={on_counter_click}>{ "+1" }</button>
+            <p>{ *counter }</p>
         </>
     }
 }
