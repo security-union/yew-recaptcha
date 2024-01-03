@@ -28,19 +28,20 @@ pub fn use_recaptcha(
     on_execute: Box<UseStateHandle<Option<Callback<String>>>>,
 ) -> () {
     let key_clone = site_key.clone();
-    use_effect_with_deps(
+    use_effect_with(
+        (),
         move |_| {
             if let Err(e) = inject_script(key_clone) {
                 error!(e);
             }
             || ()
         },
-        (),
     );
 
     // Only recompute if the on_execute callback is recomputed.
     let on_execute_clone = on_execute.clone();
-    use_effect_with_deps(
+    use_effect_with(
+        *on_execute_clone,
         move |_| {
             if let Some(_callback) = &**on_execute.clone() {
                 let future = execute(site_key, on_execute.clone());
@@ -53,7 +54,6 @@ pub fn use_recaptcha(
 
             || ()
         },
-        *on_execute_clone,
     );
 }
 
