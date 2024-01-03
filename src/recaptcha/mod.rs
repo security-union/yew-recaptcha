@@ -23,38 +23,29 @@ const GRECAPTCHA_URL: &str = "https://www.google.com/recaptcha/api.js";
 const GRECAPTCHA_ON_LOAD: &str = "GoogleRecaptchaLoaded";
 
 // Docs: https://developers.google.com/recaptcha/docs/v3
-pub fn use_recaptcha(
-    site_key: String,
-    on_execute: Box<UseStateHandle<Option<Callback<String>>>>,
-) -> () {
+pub fn use_recaptcha(site_key: String, on_execute: Box<UseStateHandle<Option<Callback<String>>>>) {
     let key_clone = site_key.clone();
-    use_effect_with(
-        (),
-        move |_| {
-            if let Err(e) = inject_script(key_clone) {
-                error!(e);
-            }
-            || ()
-        },
-    );
+    use_effect_with((), move |_| {
+        if let Err(e) = inject_script(key_clone) {
+            error!(e);
+        }
+        || ()
+    });
 
     // Only recompute if the on_execute callback is recomputed.
     let on_execute_clone = on_execute.clone();
-    use_effect_with(
-        *on_execute_clone,
-        move |_| {
-            if let Some(_callback) = &**on_execute.clone() {
-                let future = execute(site_key, on_execute.clone());
-                wasm_bindgen_futures::spawn_local(async move {
-                    if let Err(e) = future.await {
-                        error!(e);
-                    }
-                });
-            }
+    use_effect_with(*on_execute_clone, move |_| {
+        if let Some(_callback) = &**on_execute.clone() {
+            let future = execute(site_key, on_execute.clone());
+            wasm_bindgen_futures::spawn_local(async move {
+                if let Err(e) = future.await {
+                    error!(e);
+                }
+            });
+        }
 
-            || ()
-        },
-    );
+        || ()
+    });
 }
 
 async fn execute(
@@ -76,7 +67,7 @@ async fn execute(
     })
     .unwrap();
     let future: js_sys::Promise = execute
-        .call2(&JsValue::null(), &JsValue::from_str(&site_key), &action)
+        .call2(&JsValue::null(), &JsValue::from_str(&site_key), action)
         .unwrap()
         .into();
     let result = wasm_bindgen_futures::JsFuture::from(future).await?;
