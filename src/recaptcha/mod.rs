@@ -3,7 +3,7 @@ use gloo_utils::{document, window};
 use js_sys::{Function, JsString, Reflect};
 use serde::Serialize;
 use serde_wasm_bindgen::to_value;
-use wasm_bindgen::{prelude::*, JsCast};
+use wasm_bindgen::prelude::*;
 use web_sys::AddEventListenerOptions;
 use yew::prelude::*;
 
@@ -51,7 +51,7 @@ pub fn use_recaptcha(site_key: String, on_execute: UseStateHandle<Option<Callbac
 
 async fn execute(
     site_key: String,
-    callback:UseStateHandle<Option<Callback<String>>>,
+    callback: UseStateHandle<Option<Callback<String>>>,
 ) -> Result<(), JsValue> {
     let callback = match &*callback {
         Some(callback) => callback,
