@@ -6,8 +6,8 @@ const RECAPTCHA_SITE_KEY: &str = std::env!("RECAPTCHA_SITE_KEY");
 
 #[function_component(App)]
 fn app_component() -> Html {
-    let last_token = Box::new(use_state(|| None));
-    let on_execute = Box::new(use_state(|| None));
+    let last_token = use_state(|| None);
+    let on_execute = use_state(|| None);
     let on_click = {
         let on_execute = on_execute.clone();
         let last_token = last_token.clone();
@@ -34,7 +34,7 @@ fn app_component() -> Html {
     // Recaptcha will be called only when on_execute changes.
     use_recaptcha(RECAPTCHA_SITE_KEY.to_string(), on_execute);
 
-    let print_last_token = match &(**last_token) {
+    let print_last_token = match &(*last_token) {
         Some(token) => format!("reCAPTCHA token: {}", token),
         None => "Press the button to get a token, look at the console logs in case that there's an error".to_string()
     };
@@ -64,5 +64,5 @@ fn app_component() -> Html {
 }
 
 fn main() {
-    yew::start_app::<App>();
+    yew::Renderer::<App>::new().render();
 }
